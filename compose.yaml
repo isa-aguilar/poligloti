@@ -1,0 +1,70 @@
+# docker compose up                     -> poligloti only, AI endpoints from .env
+# docker compose --profile local-ai up  -> plus Ollama (chat) and speaches (voice)
+#
+# Ports are published on 127.0.0.1 only: poligloti has no login.
+services:
+  poligloti:
+    build: .
+    image: poligloti:local
+    ports:
+      - "127.0.0.1:${PORT:-8100}:8100"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Inside the container: listen on all interfaces (the published port above
+      # still limits access to this machine) and keep data in the volume.
+      HOST: 0.0.0.0
+      PORT: "8100"
+      DATA_DIR: /data
+    volumes:
+      # A named volume, not a bind mount: it keeps the permissions of the image
+      # user on every platform. Copy it out with `docker compose cp poligloti:/data ./backup`.
+      - poligloti-data:/data
+    restart: unless-stopped
+
+  ollama:
+    profiles: [local-ai]
+    image: ollama/ollama:latest
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    restart: unless-stopped
+
+  speaches:
+    profiles: [local-ai]
+    image: ghcr.io/speaches-ai/speaches:latest-cpu
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - speaches:/home/ubuntu/.cache/huggingface/hub
+    restart: unless-stopped
+
+  # One-shot: downloads the models once (about 3 GB), then they stay cached in
+  # the volumes. Safe to run again: existing models are skipped.
+  local-ai-init:
+    profiles: [local-ai]
+    image: ghcr.io/speaches-ai/speaches:latest-cpu
+    depends_on: [ollama, speaches]
+    environment:
+      SPEECH_MODELS: >-
+        Systran/faster-whisper-small
+        speaches-ai/piper-de_DE-thorsten-medium
+        speaches-ai/piper-en_GB-alba-medium
+        speaches-ai/piper-fr_FR-siwis-medium
+    entrypoint: ["sh", "-c"]
+    command:
+      - >
+        until curl -sf http://ollama:11434/api/version >/dev/null; do sleep 1; done;
+        until curl -sf http://speaches:8000/health >/dev/null; do sleep 1; done;
+        curl -sf http://ollama:11434/api/pull -d '{"model":"${LOCAL_CHAT_MODEL:-llama3.2:3b}","stream":false}' &&
+        for m in $${SPEECH_MODELS}; do
+        curl -sf -X POST "http://speaches:8000/v1/models/$$m" >/dev/null || exit 1;
+        done && echo "local AI models ready"
+    restart: "no"
+
+volumes:
+  poligloti-data:
+  ollama:
+  speaches:

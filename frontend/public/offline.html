@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#6b5bff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0a10" media="(prefers-color-scheme: dark)" />
+    <title>poligloti: offline</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        background: #f7f7f8;
+        color: #1e1d24;
+        padding: 24px;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #0b0a10;
+          color: #eeeef1;
+        }
+        .card {
+          background: #1e1d24 !important;
+        }
+        .muted {
+          color: #b1b0ba !important;
+        }
+      }
+      .card {
+        max-width: 420px;
+        background: #fff;
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        text-align: center;
+      }
+      h1 {
+        font-size: 1.3rem;
+        margin: 0 0 8px;
+      }
+      .muted {
+        color: #6b6a75;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+      ol {
+        text-align: left;
+        margin: 16px auto;
+        padding-left: 22px;
+        font-size: 0.95rem;
+        line-height: 1.7;
+      }
+      button {
+        margin-top: 12px;
+        border: 0;
+        border-radius: 14px;
+        background: #5a48ff;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 12px 24px;
+        cursor: pointer;
+      }
+      .emoji {
+        font-size: 2.4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="emoji">📡</div>
+      <h1>Can't reach the poligloti server</h1>
+      <p class="muted">The app is installed, but the server that runs it does not answer.</p>
+      <ol class="muted">
+        <li>Check that the poligloti backend is running.</li>
+        <li>Check that this device can reach it (same network, VPN if you use one).</li>
+        <li>Come back here and tap retry.</li>
+      </ol>
+      <button onclick="location.reload()">Retry</button>
+    </div>
+  </body>
+</html>

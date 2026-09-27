@@ -1,0 +1,29 @@
+# Learner data and runtime files
+data/
+.runtime/
+*.wav
+
+# Local configuration (may hold API keys)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+openapi.json
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.log

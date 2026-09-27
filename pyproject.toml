@@ -1,0 +1,34 @@
+[project]
+name = "poligloti"
+version = "0.1.0"
+description = "A patient AI language teacher that never judges you."
+license = "MIT"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["frontend"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = [
+  "E501",   # long lines are left to the formatter
+  "B008",   # FastAPI declares parameters with File()/Form() defaults
+  "RUF001", # target-language text legitimately contains non-ASCII punctuation
+  "RUF002",
+  "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["backend", "scripts"]
+ignore_missing_imports = true
+check_untyped_defs = false
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

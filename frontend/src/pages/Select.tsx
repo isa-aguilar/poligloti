@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchProfiles, fetchVoices, type Lang, type LanguageInfo, type Profile } from "@/lib/api";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
-import { getLocale, t } from "@/i18n";
+import { getLocale, setLocale, t } from "@/i18n";
 import { cn } from "@/lib/cn";
 import { UiLangToggle } from "@/components/UiLangToggle";
 import { NewLearnerForm } from "@/components/NewLearnerForm";
@@ -111,6 +111,16 @@ export default function SelectPage() {
     setAdding(false);
   };
 
+  // Picking a learner switches the interface to the language in her profile;
+  // the toggle can still change it afterwards on this device.
+  const pickUser = (p: Profile) => {
+    setUser(p.user);
+    if (p.ui_language && p.ui_language !== getLocale()) {
+      setLocale(p.ui_language);
+      setUiLang(p.ui_language);
+    }
+  };
+
   const showForm = profiles !== null && (profiles.length === 0 || adding);
 
   const start = () => {
@@ -161,7 +171,7 @@ export default function SelectPage() {
                 {profiles.map((p) => (
                   <button
                     key={p.user}
-                    onClick={() => setUser(p.user)}
+                    onClick={() => pickUser(p)}
                     className={cn(
                       "h-20 rounded-2xl border text-lg font-semibold capitalize",
                       "transition",

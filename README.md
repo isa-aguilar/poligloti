@@ -25,21 +25,21 @@ Many people understand a language well and still freeze the moment they have to 
 poligloti itself is small: a web page you open in your browser and a server that runs the lesson. The heavy work is done by three AI helpers, and you choose where each one runs, on your own computer or with a cloud provider.
 
 ```mermaid
-%%{init: {"theme":"base","themeVariables":{"fontFamily":"Inter, Helvetica, Arial, sans-serif","fontSize":"15px","lineColor":"#94A3B8","clusterBkg":"#FAFAFA","clusterBorder":"#E2E8F0","titleColor":"#475569","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":50,"padding":14}}}%%
+%%{init: {"theme":"base","themeVariables":{"lineColor":"#94A3B8","clusterBkg":"#FAFAFA","clusterBorder":"#E2E8F0","titleColor":"#475569","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":50,"padding":14}}}%%
 flowchart LR
     classDef user fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0C4A6E
     classDef hub fill:#EDE9FE,stroke:#7C3AED,stroke-width:2px,color:#2E1065
     classDef model fill:#FFEDD5,stroke:#EA580C,stroke-width:1.5px,color:#7C2D12
     classDef data fill:#F1F5F9,stroke:#64748B,stroke-width:1.5px,color:#1E293B
 
-    you["<b>You</b><br/><small>speak or type in the browser</small>"]:::user
-    app["<b>poligloti</b><br/><small>runs the lesson on your machine</small>"]:::hub
-    mem[("<b>Your progress</b><br/><small>plain text files you own</small>")]:::data
+    you["<b>You</b><br/>speak or type in the browser"]:::user
+    app["<b>poligloti</b><br/>runs the lesson on your machine"]:::hub
+    mem[("<b>Your progress</b><br/>plain text files you own")]:::data
 
     subgraph ai["AI services: local or in the cloud"]
-        stt["<b>Speech-to-text</b><br/><small>turns your voice into text</small>"]:::model
-        chat["<b>Chat model</b><br/><small>answers and corrects you</small>"]:::model
-        tts["<b>Text-to-speech</b><br/><small>gives the teacher a voice</small>"]:::model
+        stt["<b>Speech-to-text</b><br/>turns your voice into text"]:::model
+        chat["<b>Chat model</b><br/>answers and corrects you"]:::model
+        tts["<b>Text-to-speech</b><br/>gives the teacher a voice"]:::model
     end
 
     you -- "your voice" --> app

@@ -10,7 +10,7 @@ The pieces:
 - **Three AI services** with the OpenAI protocol, each configured on its own: local (Ollama, speaches, LM Studio, llama.cpp) or in the cloud (OpenAI, Groq and others).
 
 ```mermaid
-%%{init: {"theme":"base","themeVariables":{"fontFamily":"Inter, Helvetica, Arial, sans-serif","fontSize":"15px","lineColor":"#94A3B8","clusterBkg":"#FAFAFA","clusterBorder":"#E2E8F0","titleColor":"#475569","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":50,"padding":14}}}%%
+%%{init: {"theme":"base","themeVariables":{"lineColor":"#94A3B8","clusterBkg":"#FAFAFA","clusterBorder":"#E2E8F0","titleColor":"#475569","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":50,"padding":14}}}%%
 flowchart TB
     classDef user fill:#E0F2FE,stroke:#0284C7,stroke-width:1.5px,color:#0C4A6E
     classDef actor fill:#DCFCE7,stroke:#16A34A,stroke-width:1.5px,color:#14532D
@@ -18,23 +18,23 @@ flowchart TB
     classDef model fill:#FFEDD5,stroke:#EA580C,stroke-width:1.5px,color:#7C2D12
     classDef data fill:#F1F5F9,stroke:#64748B,stroke-width:1.5px,color:#1E293B
 
-    web["<b>Web app</b><br/><small>React PWA: mic, audio queue, screens</small>"]:::user
+    web["<b>Web app</b><br/>React PWA: mic, audio queue, screens"]:::user
 
     subgraph backend["Backend (FastAPI)"]
-        api["<b>API</b><br/><small>routers and /health</small>"]:::hub
-        teacher["<b>Teacher</b><br/><small>each turn: prompt, reply, voice</small>"]:::actor
-        analyst["<b>Analyst</b><br/><small>end of session: progress, scores</small>"]:::actor
+        api["<b>API</b><br/>routers and /health"]:::hub
+        teacher["<b>Teacher</b><br/>each turn: prompt, reply, voice"]:::actor
+        analyst["<b>Analyst</b><br/>end of session: progress, scores"]:::actor
     end
 
     subgraph files["Files on disk"]
-        prompts[("<b>Prompts and seeds</b><br/><small>modes, syllabus, scenarios</small>")]:::data
-        memory[("<b>Learner memory</b><br/><small>markdown in DATA_DIR</small>")]:::data
+        prompts[("<b>Prompts and seeds</b><br/>modes, syllabus, scenarios")]:::data
+        memory[("<b>Learner memory</b><br/>markdown in DATA_DIR")]:::data
     end
 
     subgraph ai["OpenAI-compatible services"]
-        stt["<b>Speech-to-text</b><br/><small>/audio/transcriptions</small>"]:::model
-        chat["<b>Chat model</b><br/><small>/chat/completions</small>"]:::model
-        tts["<b>Text-to-speech</b><br/><small>/audio/speech</small>"]:::model
+        stt["<b>Speech-to-text</b><br/>/audio/transcriptions"]:::model
+        chat["<b>Chat model</b><br/>/chat/completions"]:::model
+        tts["<b>Text-to-speech</b><br/>/audio/speech"]:::model
     end
 
     web <-- "audio or text / streamed reply" --> api
@@ -54,7 +54,7 @@ flowchart TB
 What happens between you finishing a sentence and hearing the teacher:
 
 ```mermaid
-%%{init: {"theme":"base","themeVariables":{"fontFamily":"Inter, Helvetica, Arial, sans-serif","fontSize":"14px","actorBkg":"#EDE9FE","actorBorder":"#7C3AED","actorTextColor":"#2E1065","signalColor":"#64748B","signalTextColor":"#1E293B","noteBkgColor":"#F1F5F9","noteBorderColor":"#94A3B8","noteTextColor":"#1E293B","activationBkgColor":"#FFEDD5","activationBorderColor":"#EA580C","sequenceNumberColor":"#FFFFFF"}}}%%
+%%{init: {"theme":"base","themeVariables":{"actorBkg":"#EDE9FE","actorBorder":"#7C3AED","actorTextColor":"#2E1065","signalColor":"#64748B","signalTextColor":"#1E293B","noteBkgColor":"#F1F5F9","noteBorderColor":"#94A3B8","noteTextColor":"#1E293B","activationBkgColor":"#FFEDD5","activationBorderColor":"#EA580C","sequenceNumberColor":"#FFFFFF"}}}%%
 sequenceDiagram
     autonumber
     participant B as Web app

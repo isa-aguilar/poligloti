@@ -171,6 +171,16 @@ AI_TIMEOUT = float(_env("AI_TIMEOUT", "120"))
 STT_TIMEOUT = float(_env("STT_TIMEOUT", "120"))
 TTS_TIMEOUT = float(_env("TTS_TIMEOUT", "120"))
 
+# Upload limits. Generous on purpose: browser audio (opus/aac) runs at about
+# 0.5-1 MB per minute, and the longest recording (reading a book page aloud)
+# lasts a few minutes. ffmpeg is cut at MAX_AUDIO_SECONDS of decoded audio and
+# killed after FFMPEG_TIMEOUT_S, so a malformed file cannot hang the server.
+MAX_AUDIO_BYTES = int(_env("MAX_AUDIO_BYTES", str(25 * 1024 * 1024)))
+MAX_AUDIO_SECONDS = float(_env("MAX_AUDIO_SECONDS", "900"))
+FFMPEG_TIMEOUT_S = float(_env("FFMPEG_TIMEOUT_S", "120"))
+# Any request body: above the audio limit and the 12 MB photo limit.
+MAX_BODY_BYTES = int(_env("MAX_BODY_BYTES", str(30 * 1024 * 1024)))
+
 # Orphan sessions (the end-of-session beacon never arrived) are finalized after
 # SESSION_TTL_S without activity, checked every SESSION_SWEEP_INTERVAL_S.
 SESSION_TTL_S = int(_env("SESSION_TTL_S", "7200"))

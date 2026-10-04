@@ -13,7 +13,8 @@ import time
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 
-from .. import memory, minimal_pairs, pronunciation
+from .. import config, memory, minimal_pairs, pronunciation
+from ..limits import read_upload
 from ..schemas import ReadScoreResult, TurnResult
 from ..services import stt
 from ..sessions import SESSIONS
@@ -62,7 +63,7 @@ async def turn(
 
     # 1) Get the learner transcript (audio -> STT, or direct text).
     if audio is not None:
-        raw = await audio.read()
+        raw = await read_upload(audio, config.MAX_AUDIO_BYTES, "audio")
         stt_prompt = memory.build_stt_prompt(user, lang)
         transcript = await stt.transcribe(
             raw,
@@ -148,7 +149,7 @@ async def turn_stream(
         # talking).
         session["opened"] = True
         if audio is not None:
-            raw = await audio.read()
+            raw = await read_upload(audio, config.MAX_AUDIO_BYTES, "audio")
             stt_prompt = memory.build_stt_prompt(user, lang)
             transcript = await stt.transcribe(
                 raw,
@@ -200,7 +201,7 @@ async def read_score(
 
     user, lang = session["user"], session["lang"]
     t0 = time.perf_counter()
-    raw = await audio.read()
+    raw = await read_upload(audio, config.MAX_AUDIO_BYTES, "audio")
     heard_text, words = await stt.transcribe_words(
         raw,
         lang,
@@ -295,7 +296,7 @@ async def pairs_score(
 
     user, lang = session["user"], session["lang"]
     pair = pairs[pair_index]
-    raw = await audio.read()
+    raw = await read_upload(audio, config.MAX_AUDIO_BYTES, "audio")
     # NO prompt: we want what was said, not what the recognizer would expect.
     heard_text, words = await stt.transcribe_words(
         raw, lang, filename=audio.filename or "pair.wav", content_type=audio.content_type

@@ -11,7 +11,8 @@ import asyncio
 
 import pytest
 
-from backend import cefr, memory, post_session
+from backend import cefr, config, memory, post_session
+from backend.services import AIServiceError, stt
 from tests.conftest import LEARNER
 from tests.test_api import _start, client  # noqa: F401  (shared fixture)
 
@@ -140,3 +141,74 @@ def test_level_up_with_a_corrupt_level_writes_inside_its_folder(data_dir, monkey
     out = asyncio.run(post_session._finalize_levelup(session))
     assert (data_dir / LEARNER / "de" / "level-tests" / out["levelup"]).is_file()
     assert not list(outside.iterdir())
+
+
+# ---------------------------------------------------------------------------
+# Uploads: bounded size, and a bounded ffmpeg.
+# ---------------------------------------------------------------------------
+def test_turn_rejects_audio_over_the_limit(client, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(config, "MAX_AUDIO_BYTES", 2048)
+    sid = _start(client)["session_id"]
+    resp = client.post(
+        "/turn",
+        data={"session_id": sid},
+        files={"audio": ("turn.webm", b"\x00" * 4096, "audio/webm")},
+    )
+    assert resp.status_code == 413, resp.text
+
+
+def test_turn_accepts_audio_under_the_limit(client, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(config, "MAX_AUDIO_BYTES", 4096)
+    sid = _start(client)["session_id"]
+    resp = client.post(
+        "/turn",
+        data={"session_id": sid},
+        files={"audio": ("turn.webm", b"\x00" * 2048, "audio/webm")},
+    )
+    assert resp.status_code == 200, resp.text
+
+
+def test_an_oversized_request_is_cut_before_parsing(client, monkeypatch):  # noqa: F811
+    monkeypatch.setattr(config, "MAX_BODY_BYTES", 2048)
+    resp = client.post(
+        "/ocr",
+        data={"user_id": LEARNER, "target_language": "de"},
+        files={"image": ("p.jpg", b"\xff" * 8192, "image/jpeg")},
+    )
+    assert resp.status_code == 413
+
+
+def test_ffmpeg_caps_the_decoded_duration():
+    args = stt._ffmpeg_args()
+    assert float(args[args.index("-t") + 1]) == config.MAX_AUDIO_SECONDS
+
+
+def test_a_hung_ffmpeg_is_killed(monkeypatch):
+    class HungProcess:
+        returncode: int | None = None
+        killed = False
+
+        async def communicate(self, data=None):
+            if self.killed:
+                return b"", b""
+            await asyncio.sleep(10)
+
+        def kill(self):
+            self.killed = True
+            self.returncode = -9
+
+        async def wait(self):
+            return self.returncode
+
+    proc = HungProcess()
+
+    async def fake_exec(*args, **kwargs):
+        return proc
+
+    monkeypatch.setattr(stt, "_FFMPEG", "ffmpeg")
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", fake_exec)
+    monkeypatch.setattr(config, "FFMPEG_TIMEOUT_S", 0.05)
+    with pytest.raises(AIServiceError) as err:
+        asyncio.run(stt._to_wav16k_mono(b"not-a-wav"))
+    assert err.value.code == "timeout"
+    assert proc.killed

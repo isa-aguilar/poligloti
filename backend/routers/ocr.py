@@ -8,6 +8,7 @@ import time
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from .. import config, ocr
+from ..limits import read_upload
 from ..services import AIServiceError
 from ..sessions import validate_ids
 
@@ -33,11 +34,9 @@ async def ocr_page(
             "not_configured",
             "No vision model configured. Set AI_VISION_MODEL to read book pages from a photo.",
         )
-    raw = await image.read()
+    raw = await read_upload(image, _MAX_IMAGE_BYTES, "image")
     if not raw:
         raise HTTPException(400, "empty image")
-    if len(raw) > _MAX_IMAGE_BYTES:
-        raise HTTPException(413, "image too large (max 12MB); use a smaller photo")
     t0 = time.perf_counter()
     text = await ocr.transcribe_page(
         raw, image.content_type or "image/jpeg", target_language, user=user_id

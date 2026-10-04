@@ -50,16 +50,18 @@ def _looks_like_wav(audio: bytes) -> bool:
     return len(audio) >= 12 and audio[:4] == b"RIFF" and audio[8:12] == b"WAVE"
 
 
-async def _to_wav16k_mono(audio: bytes) -> bytes:
-    """Transcode any browser format (webm/opus, mp4/aac, ogg) to 16 kHz mono WAV."""
+def _ffmpeg_args() -> list[str]:
     assert _FFMPEG
-    proc = await asyncio.create_subprocess_exec(
+    return [
         _FFMPEG,
         "-hide_banner",
         "-loglevel",
         "error",
         "-i",
         "pipe:0",
+        # Cap the decoded duration: a small compressed file can expand a lot.
+        "-t",
+        str(config.MAX_AUDIO_SECONDS),
         "-ac",
         "1",
         "-ar",
@@ -67,11 +69,29 @@ async def _to_wav16k_mono(audio: bytes) -> bytes:
         "-f",
         "wav",
         "pipe:1",
+    ]
+
+
+async def _to_wav16k_mono(audio: bytes) -> bytes:
+    """Transcode any browser format (webm/opus, mp4/aac, ogg) to 16 kHz mono WAV."""
+    proc = await asyncio.create_subprocess_exec(
+        *_ffmpeg_args(),
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    out, err = await proc.communicate(audio)
+    try:
+        out, err = await asyncio.wait_for(proc.communicate(audio), timeout=config.FFMPEG_TIMEOUT_S)
+    except TimeoutError:
+        # A malformed file must not keep ffmpeg (and the learner) waiting forever.
+        proc.kill()
+        await proc.wait()
+        logger.warning("[stt] ffmpeg timed out after %.0fs", config.FFMPEG_TIMEOUT_S)
+        raise AIServiceError(
+            "speech-to-text",
+            "timeout",
+            "The recording took too long to process. Try a shorter one.",
+        ) from None
     if proc.returncode != 0:
         # Usually an empty or cut-off recording (a very short tap). The ffmpeg
         # details help debugging but mean nothing to the learner.

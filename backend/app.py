@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__, config, sessions
+from .limits import BodySizeLimitMiddleware
 from .routers import books as books_router
 from .routers import history as history_router
 from .routers import ocr as ocr_router
@@ -47,6 +48,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="poligloti", version=__version__, lifespan=lifespan)
+
+# First of all: an oversized request is rejected before it is parsed.
+app.add_middleware(BodySizeLimitMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

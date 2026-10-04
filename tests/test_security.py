@@ -178,7 +178,9 @@ def test_an_oversized_request_is_cut_before_parsing(client, monkeypatch):  # noq
     assert resp.status_code == 413
 
 
-def test_ffmpeg_caps_the_decoded_duration():
+def test_ffmpeg_caps_the_decoded_duration(monkeypatch):
+    # CI machines have no ffmpeg: only the argument list is under test.
+    monkeypatch.setattr(stt, "_FFMPEG", "ffmpeg")
     args = stt._ffmpeg_args()
     assert float(args[args.index("-t") + 1]) == config.MAX_AUDIO_SECONDS
 

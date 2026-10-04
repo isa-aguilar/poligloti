@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend import config, syllabus
+from backend.sessions import SESSIONS
 
 SEED = """# Test syllabus
 
@@ -260,7 +261,8 @@ def test_session_start_mode9_injects_topic_and_marks_seen(client):
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["opening_pending"] is True
-    sp = body["system_prompt"]
+    # The prompt is not sent to the client: read it from the session state.
+    sp = SESSIONS[body["session_id"]]["system_prompt"]
     assert "Greetings" in sp and "ich bin / ich heiße" in sp
     assert syllabus.read_user_syllabus("alex", "de")["a1-01"]["status"] == "seen"
 
@@ -268,7 +270,7 @@ def test_session_start_mode9_injects_topic_and_marks_seen(client):
 def test_session_start_mode9_without_topic_uses_next(client):
     r = _start_lesson(client)
     assert r.status_code == 200, r.text
-    assert "a1-01" in r.json()["system_prompt"]
+    assert "a1-01" in SESSIONS[r.json()["session_id"]]["system_prompt"]
 
 
 def test_session_start_mode9_invalid_topic_400(client):

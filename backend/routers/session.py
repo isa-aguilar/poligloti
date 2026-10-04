@@ -520,7 +520,6 @@ async def session_start(req: SessionStartReq):
         "user": user,
         "target_language": lang,
         "mode": mode,
-        "system_prompt": system_prompt,
         "scenario_info": scenario_info,
         "opening": opening,
         "reference_text": session.get("reference_text"),

@@ -67,7 +67,6 @@ export interface SessionStartResponse {
   user: string;
   target_language: Lang;
   mode: number;
-  system_prompt: string;
   scenario_info: ScenarioInfo | null;
   opening: TurnResponse | null;
   // The opening arrives through /turn/stream with kickoff (modes that open

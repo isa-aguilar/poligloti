@@ -199,7 +199,8 @@ def test_mode8_start(client_mode8):
     data = r.json()
     assert data["reference_text"] == PAGE_TEXT
     assert data["opening"] is None and data["opening_pending"] is False
-    sp = data["system_prompt"]
+    # The prompt is not sent to the client: read it from the session state.
+    sp = SESSIONS[data["session_id"]]["system_prompt"]
     assert "My book" in sp and "## Page text" in sp
 
 

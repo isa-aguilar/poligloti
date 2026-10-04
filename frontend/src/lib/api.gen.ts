@@ -462,10 +462,7 @@ export interface components {
             user_id: string;
             /** Target Language */
             target_language: string;
-            /**
-             * Image
-             * Format: binary
-             */
+            /** Image */
             image: string;
         };
         /** Body_pairs_score_pairs_score_post */
@@ -474,10 +471,7 @@ export interface components {
             session_id: string;
             /** Pair Index */
             pair_index: number;
-            /**
-             * Audio
-             * Format: binary
-             */
+            /** Audio */
             audio: string;
         };
         /** Body_read_score_read_score_post */
@@ -761,8 +755,6 @@ export interface components {
             target_language: string;
             /** Mode */
             mode: number;
-            /** System Prompt */
-            system_prompt: string;
             /** Scenario Info */
             scenario_info?: {
                 [key: string]: unknown;
@@ -831,6 +823,10 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
         /** VocabItem */
         VocabItem: {

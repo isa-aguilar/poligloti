@@ -38,7 +38,8 @@ class SessionStartResult(BaseModel):
     user: str
     target_language: str
     mode: int
-    system_prompt: str
+    # No system_prompt: it carries the learner's whole memory and the client
+    # does not need it. It stays in the server-side session state.
     scenario_info: dict | None = None
     opening: TurnResult | None = None
     reference_text: str | None = None

@@ -25,6 +25,7 @@ jobs:
       - run: ruff format --check .
       - run: mypy
       - run: python -m pytest -q
+      - run: pip install pip-audit && pip-audit -r backend/requirements.txt
 
   frontend:
     runs-on: ubuntu-latest

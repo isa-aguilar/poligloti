@@ -1,5 +1,9 @@
-fastapi==0.115.6
+fastapi==0.142.2
+# Pinned explicitly: FastAPI only bounds a range, and older Starlette and
+# python-multipart releases carry public denial-of-service advisories.
+# CI runs pip-audit on this file.
+starlette==1.7.0
 uvicorn[standard]==0.34.0
 httpx==0.28.1
-python-multipart==0.0.20
+python-multipart==0.0.32
 fsrs==6.3.1

@@ -3,7 +3,36 @@ and post_session can use it without circular imports."""
 
 from __future__ import annotations
 
+import re
+
 from . import config
+
+# Levels inside free text: "B1", "A2-B1", "B1+", "A2 (estimated)".
+_CEFR_TOKEN = re.compile(r"(?<![A-Z0-9])([A-C][12])(?![0-9])")
+
+
+def normalize_cefr(raw: object) -> str | None:
+    """Canonical CEFR level ('B1' or a range like 'A2-B1'), or None if there is
+    no clear level.
+
+    The analyst model answers in free text, and its level ends up in a file name
+    (level-tests/<from>-to-<to>-<date>.md). Whatever comes in, the result is one
+    of the six levels or a range of two, never a path. Lenient on purpose so a
+    stored 'B1+' still reads as 'B1'.
+    """
+    found = _CEFR_TOKEN.findall(str(raw or "").upper())
+    levels = sorted(set(found), key=config.CEFR_LEVELS.index)
+    if len(levels) == 1:
+        return levels[0]
+    if len(levels) == 2:
+        return f"{levels[0]}-{levels[1]}"
+    return None
+
+
+def is_canonical_cefr(value: object) -> bool:
+    """For writing: only values already in canonical form are accepted."""
+    return isinstance(value, str) and normalize_cefr(value) == value
+
 
 # Starting score (0-100) per CEFR level, used to seed trackers.
 CEFR_BASE = {"A1": 20, "A2": 35, "B1": 50, "B2": 65, "C1": 80, "C2": 92}

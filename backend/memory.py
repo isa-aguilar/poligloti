@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 
 from . import config
+from .cefr import is_canonical_cefr, normalize_cefr
 
 
 def slugify(text: str, max_len: int = 40) -> str:
@@ -671,18 +672,20 @@ def read_user_cefr_declared(user: str, lang: str) -> str | None:
     card that invites her to take the initial assessment.
     """
     fm = parse_frontmatter(read_user_profile(user, lang))
-    raw = str(fm.get("cefr_estimate") or "").strip()
-    return raw or None
+    # Always canonical: a hand-edited or legacy value never reaches a file path.
+    return normalize_cefr(fm.get("cefr_estimate"))
 
 
 def set_user_cefr(user: str, lang: str, cefr: str) -> None:
     """Update cefr_estimate in the USER.md frontmatter."""
+    if not is_canonical_cefr(cefr):
+        raise ValueError(f"invalid CEFR level: {cefr!r}")
     path = user_lang_dir(user, lang) / "USER.md"
     text = _read(path)
     if not text:
         return
     if re.search(r"(?m)^cefr_estimate:.*$", text):
-        text = re.sub(r"(?m)^cefr_estimate:.*$", f"cefr_estimate: {cefr}", text)
+        text = re.sub(r"(?m)^cefr_estimate:.*$", lambda _m: f"cefr_estimate: {cefr}", text)
     elif text.startswith("---"):
         text = text.replace("---", f"---\ncefr_estimate: {cefr}", 1)
     path.write_text(text.rstrip() + "\n", encoding="utf-8")
@@ -735,6 +738,9 @@ def list_weekly_reviews(user: str, lang: str) -> list[dict]:
 
 
 def write_level_test(user: str, lang: str, frm: str, to: str, text: str) -> str:
+    # Both levels end up in the file name: canonical form only.
+    if not (is_canonical_cefr(frm) and is_canonical_cefr(to)):
+        raise ValueError(f"invalid CEFR level: {frm!r} -> {to!r}")
     d = user_lang_dir(user, lang) / "level-tests"
     d.mkdir(exist_ok=True)
     day = datetime.now().strftime("%Y-%m-%d")

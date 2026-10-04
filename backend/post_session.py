@@ -12,7 +12,7 @@ import logging
 from datetime import datetime
 
 from . import books, config, llm_parse, memory, srs, syllabus
-from .cefr import cefr_baseline, next_cefr
+from .cefr import cefr_baseline, next_cefr, normalize_cefr
 from .services import llm
 
 logger = logging.getLogger(__name__)
@@ -487,7 +487,8 @@ async def _finalize_assessment(session: dict) -> dict:
         label="assessment",
         user=session["user"],
     )
-    cefr = str(data.get("cefr") or memory.read_user_cefr(user, lang)).strip()
+    # The model proposes the level as free text: keep it only if it is a level.
+    cefr = normalize_cefr(data.get("cefr")) or memory.read_user_cefr(user, lang)
     base = cefr_baseline(cefr)
     scores = {}
     for k in config.SKILL_KEYS:
